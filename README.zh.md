@@ -94,7 +94,7 @@ session_read({ sessionId: '<B>', sinceSeq: 128, kinds: 'reasoning,tool' })
 
 | 键 | 默认值 | 作用 |
 | --- | --- | --- |
-| `enabledPresets` | `[]` | 限定的 preset；为空时不限制 |
+| `enabledPresets` | `[]` | 限定的 **当前** preset；为空时不限制。当前值取自最后一条 `agent-preset/selected` 事件，不使用创建时的 header 快照 |
 | `allowFile` | `index.js` 同目录的 `allowed-targets.json` | 准入清单文件路径 |
 | `maxChars` | 8000 | 正文上限，按 UTF-16 码元计 |
 | `allowSelf` | `false` | 允许会话向自身写入 |

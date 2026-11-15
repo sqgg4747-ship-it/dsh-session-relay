@@ -169,7 +169,7 @@ Returns `[{seq, time, kind, text}]`. Tool calls include the full argument string
 
 | Key | Default | Effect |
 | --- | --- | --- |
-| `enabledPresets` | `[]` (all presets) | Only sessions whose `agentPreset` is in this list may call the tools. |
+| `enabledPresets` | `[]` (all presets) | Only sessions whose **current** preset is in this list may call the tools. Current preset comes from the last `agent-preset/selected` event, not the creation-time header. |
 | `allowFile` | `allowed-targets.json` next to `index.js` | Whitelist path. |
 | `maxChars` | `8000` | Body cap in UTF-16 code units, so an emoji costs 2. |
 | `allowSelf` | `false` | Whether a session may message itself. |

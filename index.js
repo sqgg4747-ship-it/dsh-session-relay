@@ -392,8 +392,12 @@ export function apply(ctx, config) {
    *   就得把它的全部插件重述一遍 —— 漏一个就少一批工具，风险远大于收益。
    *   所以做成"工具到处都在、但只在允许的 preset 里能用"。
    *
-   * 判据来自 `agent.session.header.agentPreset`（resume 后 header 只剩 7 个键，
-   * agentPreset 仍在其中，实测可用）。
+   * 判据来自 `agent-preset/selected` 事件，**不是** `header.agentPreset`。
+   *
+   * ⚠️ 为什么不能用 header：`header.agentPreset` 是会话**创建时**写入的快照，
+   *    之后在 UI 里切换模式不会更新它（实测：某会话 header 仍是创建默认值 `ctf-local`，
+   *    但用户已经切到 `cordis`，导致创造模式下调用被误判成 ctf-local 而拒绝）。
+   *    真正代表当前模式的是事件流里最后一条 `agent-preset/selected`。
    *
    * ⚠️ 默认必须是 `[]`（不限制），不能是 `['cordis']`：
    *    DSH 发行版的**默认 preset 是 `standard`**（asar dsh-web-app/cordis.patch.yml:594），
@@ -404,17 +408,50 @@ export function apply(ctx, config) {
     ? config.enabledPresets.map(String).filter((s) => s !== '')
     : []
 
+  /**
+   * 取会话**当前生效**的 preset。
+   * 优先扫事件流里最后一条 agent-preset/selected；扫不到才退回 header（创建快照）。
+   */
+  function currentPreset(agent) {
+    const h = headerOf(agent)
+    const fromHeader = typeof h.agentPreset === 'string' ? h.agentPreset : ''
+    try {
+      const s = agent && agent.session
+      if (!s || typeof s.seq !== 'number' || typeof s.eventAt !== 'function') return fromHeader
+      const end = s.seq
+      const lo = Math.max(0, end - 400) // 只看最近 400 条，切换模式不会离得太远
+      for (let i = end - 1; i >= lo; i--) {
+        const ev = s.eventAt(i)
+        if (!ev) continue
+        if (ev.type === 'agent-preset/selected') {
+          const p = (ev.data || {}).agentPreset
+          if (typeof p === 'string' && p !== '') return p
+          break
+        }
+      }
+    } catch {
+      /* 读不到就用 header */
+    }
+    return fromHeader
+  }
+
   function requirePreset(exec) {
-    const h = headerOf(exec && exec.agent)
-    const preset = typeof h.agentPreset === 'string' ? h.agentPreset : ''
-    if (enabledPresets.length === 0) return preset // 空列表 = 不限制
-    if (!enabledPresets.includes(preset)) {
+    const current = currentPreset(exec && exec.agent)
+    if (enabledPresets.length === 0) return current // 空列表 = 不限制
+    if (!enabledPresets.includes(current)) {
+      const created = typeof headerOf(exec && exec.agent).agentPreset === 'string'
+        ? headerOf(exec && exec.agent).agentPreset
+        : ''
+      const hint =
+        created && created !== current
+          ? `\n（注意：该会话创建于「${created}」，但当前已切换到「${current}」。本插件按当前模式判定。）`
+          : ''
       throw new Error(
-        `本插件只在 ${enabledPresets.join(' / ')} 模式下可用，当前会话是「${preset || '未知'}」。\n` +
-          '（工具在别的模式里也会出现，但会被这里拒绝。）',
+        `本插件只在 ${enabledPresets.join(' / ')} 模式下可用，当前会话是「${current || '未知'}」。${hint}` +
+          '\n（工具在别的模式里也会出现，但会被这里拒绝。）',
       )
     }
-    return preset
+    return current
   }
 
   // ── 工具 1：session_list ──────────────────────────────────────────────
@@ -456,6 +493,8 @@ export function apply(ctx, config) {
           }
           const rows = agents.map((a) => {
             const v = view(a)
+            // preset 用「当前生效值」，不用 header 的创建快照
+            v.preset = currentPreset(a)
             v.allowed = !!(allow.targets && allow.targets.has(a.id))
             v.denied = !!(allow.denied && allow.denied.has(a.id))
             return v
