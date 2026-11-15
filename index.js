@@ -414,25 +414,40 @@ export function apply(ctx, config) {
    */
   function currentPreset(agent) {
     const h = headerOf(agent)
-    const fromHeader = typeof h.agentPreset === 'string' ? h.agentPreset : ''
+    const fromHeader = typeof h.agentPreset === "string" ? h.agentPreset : ""
     try {
       const s = agent && agent.session
-      if (!s || typeof s.seq !== 'number' || typeof s.eventAt !== 'function') return fromHeader
+      if (!s || typeof s.seq !== "number" || typeof s.eventAt !== "function") return fromHeader
       const end = s.seq
-      const lo = Math.max(0, end - 400) // 只看最近 400 条，切换模式不会离得太远
-      for (let i = end - 1; i >= lo; i--) {
+
+      // ① 先看最近 400 条：覆盖"刚刚切换过模式"这个最常见的情况，代价低。
+      const backLo = Math.max(0, end - 400)
+      for (let i = end - 1; i >= backLo; i--) {
         const ev = s.eventAt(i)
         if (!ev) continue
-        if (ev.type === 'agent-preset/selected') {
+        if (ev.type === "agent-preset/selected") {
           const p = (ev.data || {}).agentPreset
-          if (typeof p === 'string' && p !== '') return p
+          if (typeof p === "string" && p !== "") return p
           break
         }
       }
+
+      // ② 扫不到就从头全量扫，保留**最后**一条。
+      //    ⚠️ 必须做这一步：preset 切换事件常常就在会话创建后不远处（比如第 5 条），
+      //    而长会话（实测 793 条）会长到远超 400 条窗口 → 只扫尾部会退回 header 的陈旧值，
+      //    导致"已切到 cordis 仍被判成创建时的 ctf-local"。
+      let found = ""
+      for (let i = 0; i < end; i++) {
+        const ev = s.eventAt(i)
+        if (ev && ev.type === "agent-preset/selected") {
+          const p = (ev.data || {}).agentPreset
+          if (typeof p === "string" && p !== "") found = p
+        }
+      }
+      return found || fromHeader
     } catch {
-      /* 读不到就用 header */
+      return fromHeader
     }
-    return fromHeader
   }
 
   function requirePreset(exec) {
