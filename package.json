@@ -1,7 +1,7 @@
 {
   "name": "dsh-session-relay",
   "version": "0.1.0",
-  "description": "跨会话中继：在 DSH 会话之间投递消息、等待目标轮次结束、读取目标会话事件流；读写双向受落盘准入清单约束。",
+  "description": "跨会话中继：在 DeepSeek Harness 会话之间投递消息、等待目标轮次结束、读取目标事件流；读写双向受落盘准入清单约束。",
   "keywords": [
     "deepseek",
     "deepseek-harness",
