@@ -1,0 +1,36 @@
+# ── 绝不能进仓库的本机数据 ──
+# 真实白名单里有使用者自己的会话 id，仓库里只保留 .example 模板
+allowed-targets.json
+allowed-targets.*.json
+!allowed-targets.json.example
+
+# ── 依赖与构建产物 ──
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+lib/
+dist/
+*.tsbuildinfo
+
+# ── 打包产物与日志 ──
+*.tgz
+*.tar.gz
+*.log
+npm-debug.log*
+
+# ── 测试/临时残留 ──
+test-output/
+results.json
+repro-*.mjs
+tmp/
+.cache/
+
+# ── 编辑器与系统 ──
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+docs/
+

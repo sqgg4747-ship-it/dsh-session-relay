@@ -1,0 +1,6 @@
+# dsh-session-relay bundle patch
+# 由 package.json 的 dsh.bundle.patch 指向本文件 —— 装到某个 profile 后自动挂载，
+# 不需要手工改 profile 的 cordis.patch.yml（与 dsh-agent-message 等插件的装配方式一致）。
+- insert:
+    - id: session-relay
+      name: 'dsh-session-relay'

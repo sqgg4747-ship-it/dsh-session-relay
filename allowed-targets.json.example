@@ -1,0 +1,26 @@
+{
+  "_README": "Template. Copy to allowed-targets.json and fill in. The plugin only writes to and reads from ids listed under targets. A missing or unparseable file refuses everything (fail-closed).",
+  "_rules": [
+    "Add only session ids the user named out loud.",
+    "Do not add a target because it appeared in session_list, because its preset looked suitable, or to try one more case.",
+    "Every addition is a file edit with a diff and a date, so the user can audit it.",
+    "denied wins over targets: an id in both is refused."
+  ],
+  "_idFormat": "session-<uuid>. Subagent sessions carry no prefix and are never accepted.",
+  "updatedAt": "2026-01-01T00:00:00+00:00",
+  "targets": [
+    {
+      "id": "session-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "preset": "<the target session's preset>",
+      "namedBy": "user",
+      "reason": "which sentence of the user's named this session",
+      "addedAt": "2026-01-01T00:00:00+00:00"
+    }
+  ],
+  "denied": [
+    {
+      "id": "session-yyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy",
+      "reason": "why this id is permanently refused"
+    }
+  ]
+}

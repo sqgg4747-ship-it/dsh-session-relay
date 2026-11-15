@@ -1,0 +1,61 @@
+{
+  "name": "dsh-session-relay",
+  "version": "0.1.0",
+  "description": "跨会话中继：在 DSH 会话之间投递消息、等待目标轮次结束、读取目标会话事件流；读写双向受落盘准入清单约束。",
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "agent",
+    "multi-agent",
+    "messaging",
+    "cross-session",
+    "observability"
+  ],
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "allowed-targets.json.example",
+    "README.md",
+    "LICENSE",
+    "README.zh.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=20",
+    "dsh": ">=0.2.1-rc.3 <0.3.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": ">=0.2.1-rc.3 <0.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-llm": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "author": "dsh-session-relay contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sqgg4747-ship-it/dsh-session-relay.git"
+  },
+  "homepage": "https://github.com/sqgg4747-ship-it/dsh-session-relay#readme",
+  "bugs": {
+    "url": "https://github.com/sqgg4747-ship-it/dsh-session-relay/issues"
+  }
+}
